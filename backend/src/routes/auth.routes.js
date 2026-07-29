@@ -12,13 +12,13 @@ const jwt = require("jsonwebtoken")
 authRouter.post("/register", async (req, res) => {
     const { username, email, password, bio, profileImage } = req.body
 
-    const isUserAlreadyExists = userModel.findOne({
-        $or: [{ username: username }, { email: email }]
+    const isUserAlreadyExists = await userModel.findOne({
+        $or: [{ username }, { email }]
     })
 
     if (isUserAlreadyExists) {
         res.status(409).json({
-            message: "user already exists with" + (username === isUserAlreadyExists.username ? "username" : "email")
+            message: "user already exists with" + (isUserAlreadyExists.username === username ? "username" : "email")
         })
     }
 
