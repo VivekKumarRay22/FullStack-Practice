@@ -51,7 +51,49 @@ authRouter.post("/register", async (req, res) => {
 })
 
 
+/**
+ *  * @routes POST /api/auth/register
+ */
+authRouter.post("/login", async (req, res) => {
+    const { username, email, password } = req.body
 
+    const user = await userModel.findOne({
+        $or: [{ username: username }, { email: email }]
+    })
+
+    if (!user) {
+        return res.status(404).json({
+            message: "user does not exist"
+        })
+    }
+
+    const hash = crypto.createHash("sha256").update(password).digest("hex")
+
+    const isPasswordValid = hash === user.password
+
+    if (!isPasswordValid) {
+        return res.status(401).json({
+            message: "Invalid password"
+        })
+    }
+
+    const token = jwt.sign({ id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" })
+
+
+    res.cookie("token", token)
+
+    res.status(200).json({
+        message: "user logged in successfully",
+        user: {
+            username: user.username,
+            email: user.email,
+            bio: user.bio,
+            profileImage: user.profileImage
+        }
+    })
+})
 
 
 
